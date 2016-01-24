@@ -84,7 +84,7 @@ CONF_POST_REQUEST = endpoints.ResourceContainer(
 
 
 @endpoints.api(name='conference', version='v1',
-    allowed_client_ids=[WEB_CLIENT_ID, API_EXPLORER_CLIENT_ID],
+    allowed_client_ids=["676964429571-37770qoofor3j4kf57ab6lvjb432vavb.apps.googleusercontent.com", API_EXPLORER_CLIENT_ID],
     scopes=[EMAIL_SCOPE])
 class ConferenceApi(remote.Service):
     """Conference API v0.1"""
@@ -151,10 +151,14 @@ class ConferenceApi(remote.Service):
         data['key'] = c_key
         data['organizerUserId'] = request.organizerUserId = user_id
 
+        # Look for TODO 2
         # create Conference, send email to organizer confirming
         # creation of Conference & return (modified) ConferenceForm
         Conference(**data).put()
-        # TODO 2: add confirmation email sending task to queue
+        taskqueue.add(params={'email': user.email(),
+            'conferenceInfo': repr(request)},
+            url='/tasks/send_confirmation_email'
+        )
 
         return request
 
@@ -525,7 +529,9 @@ class ConferenceApi(remote.Service):
         """Return Announcement from memcache."""
         # TODO 1
         # return an existing announcement from Memcache or an empty string.
-        announcement = ""
+        announcement = memcache.get(MEMCACHE_ANNOUNCEMENTS_KEY)
+        if not announcement:
+            announcement = ""
         return StringMessage(data=announcement)
 
 api = endpoints.api_server([ConferenceApi]) # register API
