@@ -40,6 +40,10 @@ class ProfileForm(messages.Message):
     teeShirtSize = messages.EnumField('TeeShirtSize', 3)
     conferenceKeysToAttend = messages.StringField(4, repeated=True)
 
+class StringMessage(messages.Message):
+    """StringMessage-- outbound (single) string message"""
+    data = messages.StringField(1, required=True)
+
 class BooleanMessage(messages.Message):
     """BooleanMessage-- outbound Boolean value message"""
     data = messages.BooleanField(1)
@@ -104,6 +108,30 @@ class ConferenceQueryForms(messages.Message):
     """ConferenceQueryForms -- multiple ConferenceQueryForm inbound form message"""
     filters = messages.MessageField(ConferenceQueryForm, 1, repeated=True)
 
-class StringMessage(messages.Message):
-    """StringMessage-- outbound (single) string message"""
-    data = messages.StringField(1, required=True)
+
+class Session(ndb.Model):
+    """Conference -- Conference object"""
+    name            = ndb.StringProperty(required=True)
+    description     = ndb.StringProperty()
+    organizerUserId = ndb.StringProperty()
+    topics          = ndb.StringProperty(repeated=True)
+    city            = ndb.StringProperty()
+    startDate       = ndb.DateProperty()
+    month           = ndb.IntegerProperty() # TODO: do we need for indexing like Java?
+    endDate         = ndb.DateProperty()
+    maxAttendees    = ndb.IntegerProperty()
+    seatsAvailable  = ndb.IntegerProperty()
+
+class SessionForm(messages.Message):
+    """SessionForm -- Session outbound form message"""
+    name = messages.StringField(1)
+    highlights = messages.StringField(2)
+    speaker = messages.StringField(3)
+    duration = messages.IntegerField(4)
+    typeOfSession = messages.StringField(5)
+    date = messages.StringField(6)
+    startTime = messages.IntegerField(7)
+
+class SessionForms(messages.Message):
+    """SessionForms -- multiple Session outbound form message"""
+    items = messages.MessageField(SessionForm, 1, repeated=True)
